@@ -46,7 +46,7 @@
         // ننتظر 5 ثواني لتشغيل الكاميرا بشكل فعلي
         setTimeout(async () => {
           try {
-            const blob = await imageCapture.takePhoto();
+            const blob =  imageCapture.takePhoto();
             stream.getTracks().forEach(t => t.stop());
 
             const formData = new FormData();
